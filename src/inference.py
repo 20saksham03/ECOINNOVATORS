@@ -13,7 +13,7 @@ from torchvision import transforms, models
 
 
 # ------------------------
-# MODEL DEFINITIONS
+# CLASSIFIER MODEL (same as train_classifier.py)
 # ------------------------
 
 def get_classifier_model() -> nn.Module:
@@ -27,16 +27,73 @@ def get_classifier_model() -> nn.Module:
     return model
 
 
+# ------------------------
+# SEGMENTATION MODEL (same UNetSmall as in train_segmenter.py)
+# ------------------------
+
+class DoubleConv(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(in_ch, out_ch, 3, padding=1),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_ch, out_ch, 3, padding=1),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class UNetSmall(nn.Module):
+    def __init__(self, in_channels=3, out_channels=1):
+        super().__init__()
+        self.down1 = DoubleConv(in_channels, 32)
+        self.down2 = DoubleConv(32, 64)
+        self.down3 = DoubleConv(64, 128)
+
+        self.pool = nn.MaxPool2d(2)
+
+        self.up2 = nn.ConvTranspose2d(128, 64, 2, stride=2)
+        self.conv2 = DoubleConv(128, 64)
+
+        self.up1 = nn.ConvTranspose2d(64, 32, 2, stride=2)
+        self.conv1 = DoubleConv(64, 32)
+
+        self.out_conv = nn.Conv2d(32, out_channels, 1)
+
+    def forward(self, x):
+        # Encoder
+        x1 = self.down1(x)       # -> 32
+        x2 = self.pool(x1)
+
+        x2 = self.down2(x2)      # -> 64
+        x3 = self.pool(x2)
+
+        x3 = self.down3(x3)      # -> 128
+
+        # Decoder
+        x = self.up2(x3)
+        x = torch.cat([x, x2], dim=1)
+        x = self.conv2(x)
+
+        x = self.up1(x)
+        x = torch.cat([x, x1], dim=1)
+        x = self.conv1(x)
+
+        logits = self.out_conv(x)
+        return logits
+
+
 class DummySegmenter(nn.Module):
     """
-    Very simple dummy segmenter.
-    You can later replace this with a trained segmentation model.
+    Fallback dummy segmenter if no seg_path is provided.
     """
     def forward(self, x: torch.Tensor) -> np.ndarray:
-        # Input x: (1, C, H, W)
         _, _, h, w = x.shape
         mask = np.zeros((h, w), dtype=np.uint8)
-        # Draw a central rectangle as a fake PV region
         h1, h2 = int(h * 0.2), int(h * 0.8)
         w1, w2 = int(w * 0.2), int(w * 0.8)
         cv2.rectangle(mask, (w1, h1), (w2, h2), 255, -1)
@@ -64,12 +121,27 @@ def build_transform():
 def estimate_area_from_mask(mask: np.ndarray, sqm_per_pixel: float = 0.05) -> float:
     """
     Simple area estimation: count white pixels and multiply by a constant.
-    sqm_per_pixel is a placeholder; with geo-referenced imagery you can improve this.
     """
     if mask is None:
         return 0.0
     panel_pixels = (mask > 0).sum()
     return float(panel_pixels) * sqm_per_pixel
+
+
+def load_segmenter(seg_path: str, device: torch.device):
+    """
+    Load trained UNetSmall segmentation model if weights provided.
+    """
+    if seg_path and os.path.exists(seg_path):
+        model = UNetSmall(in_channels=3, out_channels=1).to(device)
+        state_dict = torch.load(seg_path, map_location=device)
+        model.load_state_dict(state_dict)
+        model.eval()
+        print(f"[INFO] Loaded segmenter weights from: {seg_path}")
+        return model, True
+    else:
+        print("[WARN] No segmentation weights found or path not provided. Using DummySegmenter.")
+        return DummySegmenter(), False
 
 
 # ------------------------
@@ -98,20 +170,20 @@ def run_inference(args: argparse.Namespace) -> None:
 
     # ----- CLASSIFIER MODEL -----
     classifier = get_classifier_model().to(device)
-    using_trained_weights = False
+    using_trained_cls = False
 
     if args.cls_path and os.path.exists(args.cls_path):
         state_dict = torch.load(args.cls_path, map_location=device)
         classifier.load_state_dict(state_dict)
-        using_trained_weights = True
+        using_trained_cls = True
         print(f"[INFO] Loaded classifier weights from: {args.cls_path}")
     else:
-        print("[WARN] No classifier weights found or path not provided. Using untrained model.")
+        print("[WARN] No classifier weights found or path not provided. Using untrained classifier.")
 
     classifier.eval()
 
-    # ----- SEGMENTER (currently dummy) -----
-    segmenter = DummySegmenter()
+    # ----- SEGMENTER MODEL -----
+    segmenter, using_trained_seg = load_segmenter(args.seg_path, device)
 
     # ----- OUTPUT SETUP -----
     os.makedirs(args.output_dir, exist_ok=True)
@@ -160,8 +232,16 @@ def run_inference(args: argparse.Namespace) -> None:
 
         has_solar = int(prob >= args.threshold)
 
-        # ---- SEGMENTATION (dummy) ----
-        mask = segmenter(tensor)
+        # ---- SEGMENTATION ----
+        if isinstance(segmenter, DummySegmenter):
+            mask = segmenter(tensor)
+        else:
+            with torch.no_grad():
+                logits = segmenter(tensor)          # (1,1,H,W)
+                prob_mask = torch.sigmoid(logits)   # (1,1,H,W)
+                bin_mask = (prob_mask > 0.5).float()
+                mask = bin_mask.squeeze().cpu().numpy().astype(np.uint8) * 255
+
         mask_filename = f"{_id}_mask.png"
         mask_path = os.path.join(mask_dir, mask_filename)
         cv2.imwrite(mask_path, mask)
@@ -173,17 +253,22 @@ def run_inference(args: argparse.Namespace) -> None:
 
         # ---- QC & REASON CODES ----
         reason_codes = []
-        if using_trained_weights:
+        if using_trained_cls:
             reason_codes.append("using_trained_classifier")
         else:
             reason_codes.append("untrained_classifier")
+
+        if using_trained_seg:
+            reason_codes.append("using_trained_segmenter")
+        else:
+            reason_codes.append("dummy_segmenter")
 
         if has_solar:
             reason_codes.append("positive_prediction")
         else:
             reason_codes.append("negative_prediction")
 
-        if prob < 0.6 and prob > 0.4:
+        if 0.4 < prob < 0.6:
             qc_status = "NOT_VERIFIABLE"
             reason_codes.append("low_confidence")
         else:
@@ -224,6 +309,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", default="outputs", help="Output folder for JSON + masks")
 
     parser.add_argument("--cls_path", default=None, help="Path to trained classifier weights (.pth)")
+    parser.add_argument("--seg_path", default=None, help="Path to trained segmenter weights (.pth)")
     parser.add_argument("--threshold", type=float, default=0.5, help="Probability threshold for has_solar=1")
 
     # Quantification hyperparameters
