@@ -1,0 +1,22 @@
+# Core scientific stack
+numpy
+pandas
+scikit-learn
+
+# Deep learning (PyTorch CPU)
+torch
+torchvision
+torchaudio
+
+# Imaging
+Pillow
+opencv-python
+
+# Utilities
+tqdm
+requests
+pyyaml
+matplotlib
+
+# For JSON + mask processing
+shapely

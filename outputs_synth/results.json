@@ -1,0 +1,77 @@
+[
+    {
+        "id": "id_0",
+        "lat": "12.9000",
+        "lon": "77.6000",
+        "has_solar": 0,
+        "confidence": 0.1621583104133606,
+        "panel_count": 0,
+        "area_sqm": 1140.05,
+        "capacity_kw": 205.20899999999997,
+        "qc_status": "VERIFIABLE",
+        "reason_codes": [
+            "dummy_model_output"
+        ],
+        "mask_path": "outputs_synth\\masks\\id_0_mask.png"
+    },
+    {
+        "id": "id_1",
+        "lat": "12.9000",
+        "lon": "77.6000",
+        "has_solar": 1,
+        "confidence": 0.9106667041778564,
+        "panel_count": 712,
+        "area_sqm": 1140.05,
+        "capacity_kw": 205.20899999999997,
+        "qc_status": "VERIFIABLE",
+        "reason_codes": [
+            "dummy_model_output"
+        ],
+        "mask_path": "outputs_synth\\masks\\id_1_mask.png"
+    },
+    {
+        "id": "id_2",
+        "lat": "12.9000",
+        "lon": "77.6000",
+        "has_solar": 1,
+        "confidence": 0.8921930193901062,
+        "panel_count": 712,
+        "area_sqm": 1140.05,
+        "capacity_kw": 205.20899999999997,
+        "qc_status": "VERIFIABLE",
+        "reason_codes": [
+            "dummy_model_output"
+        ],
+        "mask_path": "outputs_synth\\masks\\id_2_mask.png"
+    },
+    {
+        "id": "id_3",
+        "lat": "12.9000",
+        "lon": "77.6000",
+        "has_solar": 1,
+        "confidence": 0.5968048572540283,
+        "panel_count": 712,
+        "area_sqm": 1140.05,
+        "capacity_kw": 205.20899999999997,
+        "qc_status": "VERIFIABLE",
+        "reason_codes": [
+            "dummy_model_output"
+        ],
+        "mask_path": "outputs_synth\\masks\\id_3_mask.png"
+    },
+    {
+        "id": "id_4",
+        "lat": "12.9000",
+        "lon": "77.6000",
+        "has_solar": 0,
+        "confidence": 0.19303327798843384,
+        "panel_count": 0,
+        "area_sqm": 1140.05,
+        "capacity_kw": 205.20899999999997,
+        "qc_status": "VERIFIABLE",
+        "reason_codes": [
+            "dummy_model_output"
+        ],
+        "mask_path": "outputs_synth\\masks\\id_4_mask.png"
+    }
+]

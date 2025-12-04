@@ -1,0 +1,29 @@
+
+---
+
+## 4️⃣ (Bonus) Suggested `requirements.txt`
+
+You can tweak this based on what you actually use, but here’s a solid starting point:
+
+```txt
+# Core
+numpy
+pandas
+scikit-learn
+
+# Deep learning (choose one stack; here using PyTorch)
+torch
+torchvision
+torchaudio
+
+# Imaging
+Pillow
+opencv-python
+
+# Utils
+tqdm
+pyyaml
+matplotlib
+
+# For HTTP requests if fetching tiles
+requests
