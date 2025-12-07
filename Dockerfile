@@ -7,10 +7,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install system dependencies (add more if your code needs them)
+# Install system dependencies (OpenCV needs these)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python deps
@@ -21,6 +26,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Default entrypoint is the inference pipeline.
-# You can pass CLI args after the image name:
-#   docker run <image> --input_csv ... --img_root ... --output_dir ...
 ENTRYPOINT ["python", "src/inference.py"]

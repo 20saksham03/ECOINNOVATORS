@@ -1,0 +1,92 @@
+[
+    {
+        "id": "id_0",
+        "lat": 12.9,
+        "lon": 77.6,
+        "has_solar": 0,
+        "confidence": 0.4480602741241455,
+        "panel_count": 0,
+        "area_sqm": 0.0,
+        "capacity_kw": 0.0,
+        "qc_status": "NOT_VERIFIABLE",
+        "reason_codes": [
+            "untrained_classifier",
+            "dummy_segmenter",
+            "negative_prediction",
+            "low_confidence"
+        ],
+        "mask_path": "outputs/masks/id_0_mask.png"
+    },
+    {
+        "id": "id_1",
+        "lat": 12.9,
+        "lon": 77.6,
+        "has_solar": 0,
+        "confidence": 0.4480602741241455,
+        "panel_count": 0,
+        "area_sqm": 0.0,
+        "capacity_kw": 0.0,
+        "qc_status": "NOT_VERIFIABLE",
+        "reason_codes": [
+            "untrained_classifier",
+            "dummy_segmenter",
+            "negative_prediction",
+            "low_confidence"
+        ],
+        "mask_path": "outputs/masks/id_1_mask.png"
+    },
+    {
+        "id": "id_2",
+        "lat": 12.9,
+        "lon": 77.6,
+        "has_solar": 0,
+        "confidence": 0.4480602741241455,
+        "panel_count": 0,
+        "area_sqm": 0.0,
+        "capacity_kw": 0.0,
+        "qc_status": "NOT_VERIFIABLE",
+        "reason_codes": [
+            "untrained_classifier",
+            "dummy_segmenter",
+            "negative_prediction",
+            "low_confidence"
+        ],
+        "mask_path": "outputs/masks/id_2_mask.png"
+    },
+    {
+        "id": "id_3",
+        "lat": 12.9,
+        "lon": 77.6,
+        "has_solar": 0,
+        "confidence": 0.4480602741241455,
+        "panel_count": 0,
+        "area_sqm": 0.0,
+        "capacity_kw": 0.0,
+        "qc_status": "NOT_VERIFIABLE",
+        "reason_codes": [
+            "untrained_classifier",
+            "dummy_segmenter",
+            "negative_prediction",
+            "low_confidence"
+        ],
+        "mask_path": "outputs/masks/id_3_mask.png"
+    },
+    {
+        "id": "id_4",
+        "lat": 12.9,
+        "lon": 77.6,
+        "has_solar": 0,
+        "confidence": 0.4480602741241455,
+        "panel_count": 0,
+        "area_sqm": 0.0,
+        "capacity_kw": 0.0,
+        "qc_status": "NOT_VERIFIABLE",
+        "reason_codes": [
+            "untrained_classifier",
+            "dummy_segmenter",
+            "negative_prediction",
+            "low_confidence"
+        ],
+        "mask_path": "outputs/masks/id_4_mask.png"
+    }
+]
